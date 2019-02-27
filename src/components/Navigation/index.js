@@ -6,7 +6,6 @@ import * as ROUTES from '../../constants/routes'
 
 const Navigation = () => {
   const authUser = useContext(AuthUserContext)
-  console.log(authUser)
   return authUser ? <NavigationAuth /> : <NavigationNonAuth />
 }
 
