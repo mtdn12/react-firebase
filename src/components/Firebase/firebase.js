@@ -16,6 +16,9 @@ class Firebase {
     app.initializeApp(config)
     this.auth = app.auth()
     this.db = app.database()
+    this.googleProvider = new app.auth.GoogleAuthProvider()
+    this.facebookProvider = new app.auth.FacebookAuthProvider()
+    this.emailAuthProvider = app.auth.EmailAuthProvider
   }
   // Auth Api
   doCreateUserWithEmailAndPassword = (email, password) =>
@@ -23,6 +26,15 @@ class Firebase {
 
   doSignInWithEmailAndPassword = (email, password) =>
     this.auth.signInWithEmailAndPassword(email, password)
+
+  doSignInWithGoogle = () => this.auth.signInWithPopup(this.googleProvider)
+
+  doSignInWithFacebook = () => this.auth.signInWithPopup(this.facebookProvider)
+
+  doSendEmailVerification = () =>
+    this.auth.currentUser.sendEmailVerification({
+      url: process.env.REACT_APP_CONFIRMATION_EMAIL_REDIRECT,
+    })
 
   doSignOut = () => this.auth.signOut()
 
@@ -34,6 +46,32 @@ class Firebase {
   user = uid => this.db.ref(`users/${uid}`)
 
   users = () => this.db.ref('users')
+
+  onAuthUserListener = (next, fallback) =>
+    this.auth.onAuthStateChanged(auth => {
+      if (auth) {
+        this.user(auth.uid)
+          .once('value')
+          .then(snapshot => {
+            const dbUser = snapshot.val()
+
+            if (!dbUser.roles) {
+              dbUser.roles = []
+            }
+            // merge auth and db user
+            auth = {
+              uid: auth.uid,
+              email: auth.email,
+              emailVerified: auth.emailVerified,
+              providerData: auth.providerData,
+              ...dbUser,
+            }
+            next(auth)
+          })
+      } else {
+        fallback()
+      }
+    })
 }
 
 export default Firebase

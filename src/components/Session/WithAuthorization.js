@@ -9,11 +9,16 @@ const withAuthorization = condition => Component => {
     const firebase = useContext(FirebaseContext)
     const auth = useContext(AuthUserContext)
     useEffect(() => {
-      const listener = firebase.auth.onAuthStateChanged(auth => {
-        if (!condition(auth)) {
+      const listener = firebase.onAuthUserListener(
+        auth => {
+          if (!condition(auth)) {
+            props.history.push(ROUTES.SIGN_IN)
+          }
+        },
+        () => {
           props.history.push(ROUTES.SIGN_IN)
         }
-      })
+      )
       return () => listener()
     }, [])
 

@@ -9,21 +9,29 @@ import SignInPage from '../SignIn'
 import PasswordForgetPage from '../PasswordForget'
 import HomePage from '../Home'
 import AccountPage from '../Account'
-// import AdminPage from '../Admin'
+import AdminPage from '../Admin'
 import * as ROUTES from '../../constants/routes'
 
 const App = () => {
-  const [authUser, setAuthUser] = useState(null)
-  const fireBase = useContext(FirebaseContext)
+  const [authUser, setAuthUser] = useState(
+    JSON.parse(localStorage.getItem('authUser'))
+  )
+  const firebase = useContext(FirebaseContext)
   useEffect(() => {
-    const listener = fireBase.auth.onAuthStateChanged(auth => {
-      auth ? setAuthUser(auth) : setAuthUser(null)
-    })
+    const listener = firebase.onAuthUserListener(
+      auth => {
+        localStorage.setItem('authUser', JSON.stringify(auth))
+        setAuthUser(auth)
+      },
+      () => setAuthUser(null)
+    )
     return () => {
       // Clear listener
+      localStorage.removeItem('authUser')
       listener()
     }
-  }, [authUser])
+  }, [])
+  console.log(authUser)
   return (
     <AuthUserContext.Provider value={authUser}>
       <Router>
@@ -40,7 +48,7 @@ const App = () => {
             <Route exact path={ROUTES.SIGN_UP} component={SignUpPage} />
             <Route exact path={ROUTES.SIGN_IN} component={SignInPage} />
             <Route exact path={ROUTES.HOME} component={HomePage} />
-            {/* <Route exact path={ROUTES.ADMIN} component={AdminPage} /> */}
+            <Route exact path={ROUTES.ADMIN} component={AdminPage} />
             <Route exact path={ROUTES.ACCOUNT} component={AccountPage} />
           </Switch>
         </div>
