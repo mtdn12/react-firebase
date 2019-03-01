@@ -4,21 +4,21 @@ import AuthUserContext from './context'
 import { FirebaseContext } from '../Firebase'
 
 const withEmailVerification = Component => {
-  const [isSent, setIsSent] = useState(false)
-  const needsEmailVerification = auth =>
-    auth &&
-    !auth.emailVerified &&
-    auth.providerData.map(provider => provider.providerId).includes('password')
+  return props => {
+    const [isSent, setIsSent] = useState(false)
+    const auth = useContext(AuthUserContext)
+    const firebase = useContext(FirebaseContext)
+    const needsEmailVerification = auth =>
+      auth &&
+      !auth.emailVerified &&
+      auth.providerData
+        .map(provider => provider.providerId)
+        .includes('password')
 
-  const onSendEmailVerification = () => {
-    firebase.onSendEmailVerification().then(() => setIsSent(true))
-  }
-
-  const auth = useContext(AuthUserContext)
-  const firebase = useContext(FirebaseContext)
-
-  return props =>
-    needsEmailVerification(auth) ? (
+    const onSendEmailVerification = () => {
+      firebase.doSendEmailVerification().then(() => setIsSent(true))
+    }
+    return needsEmailVerification(auth) ? (
       <div>
         {isSent ? (
           <p>
@@ -42,6 +42,7 @@ const withEmailVerification = Component => {
     ) : (
       <Component {...props} />
     )
+  }
 }
 
 export default withEmailVerification

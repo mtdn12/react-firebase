@@ -19,6 +19,8 @@ class Firebase {
     this.googleProvider = new app.auth.GoogleAuthProvider()
     this.facebookProvider = new app.auth.FacebookAuthProvider()
     this.emailAuthProvider = app.auth.EmailAuthProvider
+
+    this.serverValue = app.database.ServerValue
   }
   // Auth Api
   doCreateUserWithEmailAndPassword = (email, password) =>
@@ -41,6 +43,11 @@ class Firebase {
   doPasswordReset = email => this.auth.sendPasswordResetEmail(email)
 
   doPasswordUpdate = password => this.auth.currentUser.updatePassword(password)
+
+  // Message API
+  message = uid => this.db.ref(`messages/${uid}`)
+
+  messages = () => this.db.ref('messages')
 
   // User api
   user = uid => this.db.ref(`users/${uid}`)

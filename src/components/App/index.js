@@ -48,7 +48,7 @@ const App = () => {
             <Route exact path={ROUTES.SIGN_UP} component={SignUpPage} />
             <Route exact path={ROUTES.SIGN_IN} component={SignInPage} />
             <Route exact path={ROUTES.HOME} component={HomePage} />
-            <Route exact path={ROUTES.ADMIN} component={AdminPage} />
+            <Route path={ROUTES.ADMIN} component={AdminPage} />
             <Route exact path={ROUTES.ACCOUNT} component={AccountPage} />
           </Switch>
         </div>

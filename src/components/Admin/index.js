@@ -3,8 +3,10 @@ import { FirebaseContext } from '../Firebase'
 import * as ROLES from '../../constants/roles'
 import { withAuthorization, withEmailVerification } from '../Session'
 import { compose } from 'recompose'
+import { Switch, Route, Link } from 'react-router-dom'
+import * as ROUTES from '../../constants/routes'
 
-const AdminPage = () => {
+const UserList = () => {
   const [loading, setLoading] = useState(false)
   const [users, setUsers] = useState([])
   // get firebase from context
@@ -25,19 +27,10 @@ const AdminPage = () => {
       firebase.users().off()
     }
   }, [])
-
   return (
     <div>
-      <h1>Admin page</h1>
+      <h2>Users</h2>
       {loading && <div>Loading...</div>}
-      <UserList users={users} />
-    </div>
-  )
-}
-
-const UserList = ({ users }) => {
-  return (
-    <div>
       <ul>
         {users.map(user => (
           <li key={user.uid}>
@@ -53,9 +46,82 @@ const UserList = ({ users }) => {
               <strong>Username: </strong>
               {user.username}
             </span>
+            <span>
+              <Link
+                to={{
+                  pathname: `${ROUTES.ADMIN}/${user.uid}`,
+                  state: { user },
+                }}>
+                Details
+              </Link>
+            </span>
           </li>
         ))}
       </ul>
+    </div>
+  )
+}
+
+const UserItem = ({ match, location }) => {
+  console.log(match)
+  console.log(location)
+  const [user, setUser] = useState(location.state)
+  const [loading, setLoading] = useState(false)
+  const firebase = useContext(FirebaseContext)
+
+  const onSendPasswordResetEmail = () => {
+    firebase.doPasswordReset(user.email)
+  }
+
+  useEffect(() => {
+    if (user) return
+    setLoading(true)
+    firebase.user(match.params.id).on('value', snapshot => {
+      setUser(snapshot.val())
+      setLoading(false)
+    })
+    return () => {
+      firebase.user(match.params.id).off()
+    }
+  }, [])
+
+  return (
+    <div>
+      <h2>User ({match.params.id})</h2>
+      {loading && <div>Loading...</div>}
+      {user && (
+        <div>
+          <span>
+            <strong>ID: </strong>
+            {user.uid}
+          </span>
+          <span>
+            <strong>E-Mail: </strong>
+            {user.email}
+          </span>
+          <span>
+            <strong>Username: </strong> {user.username}
+          </span>
+          <span>
+            <button type="button" onClick={onSendPasswordResetEmail}>
+              Send Password Reset
+            </button>
+          </span>
+        </div>
+      )}
+    </div>
+  )
+}
+
+const AdminPage = () => {
+  return (
+    <div>
+      <h1>Admin page</h1>
+      <p>The Admin Page is accessible by every signed in admin user</p>
+      <Switch>
+        <Route exact path={ROUTES.ADMIN_DETAILS} component={UserItem} />
+        <Route exact path={ROUTES.ADMIN} component={UserList} />
+      </Switch>
     </div>
   )
 }
